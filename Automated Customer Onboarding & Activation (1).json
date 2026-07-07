@@ -1,0 +1,615 @@
+{
+  "name": "Automated Customer Onboarding & Activation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "signup",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        -160
+      ],
+      "id": "b2a5bcaa-b417-4287-bc1e-93a5b3eee04d",
+      "name": "Webhook",
+      "webhookId": "08368597-2604-406f-88be-d2ac7f9e7297"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "event",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        176
+      ],
+      "id": "f896a9b2-b87e-4d2e-97ce-628956d07580",
+      "name": "Webhook1",
+      "webhookId": "97c4f358-0b59-4f86-b3cb-b3f55dde0ce3"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $json.body.email }}",
+            "name": "={{ $json.body.name }}",
+            "plan_tier": "={{ $json.body.plan_tier }}",
+            "company": "={{ $json.body.company }}",
+            "signup_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "plan_tier",
+              "displayName": "plan_tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signup_at",
+              "displayName": "signup_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "94386382-f7b4-437e-a7f5-5a467373f21c",
+      "name": "Postgres - Select User1",
+      "credentials": {
+        "postgres": {
+          "id": "60QWtAkw1GVjlno4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "activation_events",
+          "mode": "list",
+          "cachedResultName": "activation_events"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_type": "={{ $('Webhook1').item.json.body.event_type }}",
+            "user_id": "={{ $json.id }}",
+            "occurred_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        176
+      ],
+      "id": "0c7c26e9-a09f-4cc0-af6a-dc6b2d1e4d6d",
+      "name": "Insert Activation Event",
+      "credentials": {
+        "postgres": {
+          "id": "60QWtAkw1GVjlno4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        176
+      ],
+      "id": "2aeee8cc-c19f-4a58-8180-7a49fd17c261",
+      "name": "Select User by Email",
+      "credentials": {
+        "postgres": {
+          "id": "60QWtAkw1GVjlno4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        656
+      ],
+      "id": "021e090e-4f7e-4793-875b-1d614af16fef",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  u.id,\n  u.email,\n  u.plan_tier,\n  u.signup_at,\n  MAX(CASE WHEN e.event_type = 'email_verified' THEN e.occurred_at END) AS verified_at,\n  MAX(CASE WHEN e.event_type = 'first_project_created' THEN e.occurred_at END) AS project_created_at,\n  MAX(CASE WHEN e.event_type = 'teammate_invited' THEN e.occurred_at END) AS invited_at,\n  MAX(CASE WHEN e.event_type = 'first_task_completed' THEN e.occurred_at END) AS activated_at\nFROM users u\nLEFT JOIN activation_events e ON u.id = e.user_id\nGROUP BY u.id, u.email, u.plan_tier, u.signup_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        656
+      ],
+      "id": "da5a4f83-9c5f-4a16-bd9f-1c8573f4b22c",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "60QWtAkw1GVjlno4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n  const d = item.json;\n  const now = new Date();\n\n  // Figure out current stage: the most recent milestone they've hit\n  let stage = 'signed_up';\n  let lastMilestoneAt = new Date(d.signup_at);\n\n  if (d.verified_at) {\n    stage = 'email_verified';\n    lastMilestoneAt = new Date(d.verified_at);\n  }\n  if (d.project_created_at) {\n    stage = 'first_project_created';\n    lastMilestoneAt = new Date(d.project_created_at);\n  }\n  if (d.invited_at) {\n    stage = 'teammate_invited';\n    lastMilestoneAt = new Date(d.invited_at);\n  }\n  if (d.activated_at) {\n    stage = 'activated';\n    lastMilestoneAt = new Date(d.activated_at);\n  }\n\n  // FROM (testing):\nconst minutesStalled = Math.floor((now - lastMilestoneAt) / (1000 * 60));\nconst STALL_THRESHOLD_MINUTES = 3;\nconst isStalled = stage !== 'activated' && minutesStalled >= STALL_THRESHOLD_MINUTES;\n\n// TO (real):\nconst daysStalled = Math.floor((now - lastMilestoneAt) / (1000 * 60 * 60 * 24));\nconst STALL_THRESHOLD_DAYS = 3;\nconst isStalled = stage !== 'activated' && daysStalled >= STALL_THRESHOLD_DAYS;\n\n  results.push({\n    json: {\n      ...d,\n      stage,\n      daysStalled,\n      isStalled\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        656
+      ],
+      "id": "9e5fa8f4-054f-4dbf-88b8-86b493913cb5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "70a2f1fc-d9b6-4128-aa51-8a2f78d647fc",
+              "leftValue": "={{ $json.isStalled }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        656
+      ],
+      "id": "d01df72d-6892-45ce-af29-34038263ca36",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a5a40bcd-5970-4ec9-be4a-126c13b661dc",
+              "leftValue": "={{ $json.plan_tier }}",
+              "rightValue": "enterprise",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        560
+      ],
+      "id": "3b9fdacf-3f1e-4c4b-ba9d-68f22569a9e6",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ACQS6K1DK",
+          "mode": "list",
+          "cachedResultName": "notify-team-leads"
+        },
+        "text": "=🚨 Enterprise user stalled at \"{{ $json.stage }}\"\nEmail: {{ $json.email }}\nStuck for: {{ $json.daysStalled }} minutes\nRecommend: personal outreach from CS team",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1040,
+        464
+      ],
+      "id": "1ba92b2c-0756-4550-9db7-350024824b98",
+      "name": "Send a message",
+      "webhookId": "371d6e86-01a8-460d-95f7-b51f6ac6ddf6",
+      "credentials": {
+        "slackApi": {
+          "id": "z7bG26VNk50LY82m",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Quick tip to get the most out of TaskFlow",
+        "emailType": "text",
+        "message": "Hi, noticed you haven't [reached the next step] yet — here's why that matters and how to do it in under a minute...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        656
+      ],
+      "id": "3eed8cf6-7fa6-4c96-bb05-0bb1e60ef52f",
+      "name": "Send a message1",
+      "webhookId": "15b8a2c3-4eea-4fc7-b0fd-cf1132d66f24",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4Qo4RfIBUeps16qe",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH funnel AS (\n  SELECT\n    COUNT(*) AS total_signups,\n    COUNT(DISTINCT CASE WHEN e.event_type = 'email_verified' THEN u.id END) AS verified,\n    COUNT(DISTINCT CASE WHEN e.event_type = 'first_project_created' THEN u.id END) AS project_created,\n    COUNT(DISTINCT CASE WHEN e.event_type = 'teammate_invited' THEN u.id END) AS invited,\n    COUNT(DISTINCT CASE WHEN e.event_type = 'first_task_completed' THEN u.id END) AS activated\n  FROM users u\n  LEFT JOIN activation_events e ON u.id = e.user_id\n)\nSELECT\n  total_signups,\n  verified,\n  ROUND(100.0 * verified / NULLIF(total_signups, 0), 1) AS pct_verified,\n  project_created,\n  ROUND(100.0 * project_created / NULLIF(total_signups, 0), 1) AS pct_project_created,\n  invited,\n  ROUND(100.0 * invited / NULLIF(total_signups, 0), 1) AS pct_invited,\n  activated,\n  ROUND(100.0 * activated / NULLIF(total_signups, 0), 1) AS pct_activated\nFROM funnel;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        -176
+      ],
+      "id": "61684a4f-84dc-4256-bf27-a5e0e3e57075",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "60QWtAkw1GVjlno4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Signup Intake — new user registration",
+        "height": 256,
+        "width": 544
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "26a37ded-d3d3-4651-8c00-c4f96cc0d42a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Event Logging — records onboarding milestones as they happen",
+        "height": 272,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "7ffd4b05-9ce3-4406-a39e-df08eabcb1f1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# **Daily Stall Detection & Routing — finds stuck users, alerts CS or nudges by email based on account value**",
+        "height": 416,
+        "width": 1440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "0a754bdb-6a40-4608-8ae3-7f89182b95fa",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Select User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Select User by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Select User1": {
+      "main": [
+        []
+      ]
+    },
+    "Select User by Email": {
+      "main": [
+        [
+          {
+            "node": "Insert Activation Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3187d6d0-e154-4281-8402-644f604e674c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "feaa901ecc095fe068df8d882696af59d7d022e7a833becd0182d58229147995"
+  },
+  "id": "PWHNm5QclTOkCFM7",
+  "tags": []
+}
